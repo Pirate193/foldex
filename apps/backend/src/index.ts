@@ -5,7 +5,7 @@ console.log("[api] starting", {
   port: Number(process.env.PORT) || 3000,
   frontendUrl: process.env.FRONTEND_URL ?? "(unset)",
   betterAuthUrl: process.env.BETTER_AUTH_URL ?? "(unset)",
-  manimFlaskUrl: process.env.MANIM_FLASK_URL ?? "(unset, worker-only)",
+  manimFlaskUrl: process.env.MANIM_FLASK_URL ?? "(unset)",
   databaseConfigured: Boolean(process.env.DATABASE_URL),
   redisConfigured: Boolean(process.env.REDIS_URL),
 });
@@ -16,6 +16,15 @@ try {
 } catch (error) {
   console.error("[api] migrations failed", error);
   throw error;
+}
+
+if (process.env.REDIS_URL) {
+  try {
+    await import("./worker");
+    console.log("[api] background video worker started");
+  } catch (err) {
+    console.warn("[api] could not start worker:", err);
+  }
 }
 
 export default {

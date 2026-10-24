@@ -142,7 +142,7 @@ export function ResizableSidebarLayout({
         onResizeStart={handleResizeStart} 
       />
       
-      <SidebarInset>
+      <SidebarInset className="overflow-hidden min-h-0 flex-1 flex flex-col">
         <OfflineBanner />
         <Suspense>
           <TabLayout>

@@ -95,7 +95,7 @@ const WatchList = () => {
   }
 
   return (
-    <div className="py-4 px-4 ">
+    <div className="flex-1 overflow-y-auto py-4 px-4 h-full">
       {/* Header */}
       <div className="flex  mb-6  gap-2">
         <Sidebar className="h-10 w-10 cursor-pointer" onClick={toggleSidebar} />

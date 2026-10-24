@@ -21,7 +21,9 @@ try {
   throw error;
 }
 
-const rendererUrl = (process.env.MANIM_FLASK_URL ?? "http://localhost:5001").replace(
+const rendererUrl = (process.env.MANIM_FLASK_URL ?? "http://localhost:5001")
+  .replace(/\/generate-video\/?$/, "")
+  .replace(
   /\/$/,
   "",
 );
