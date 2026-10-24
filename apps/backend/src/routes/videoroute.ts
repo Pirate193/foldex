@@ -23,11 +23,25 @@ import {
   submitFeedback,
   updatevideo,
 } from "../controllers/videocontroller";
+import { seedConvexVideos } from "../db/seed-convex";
 
 const factory = createFactory<{ Variables: Appvariables }>();
 
 const videoRouter = new Hono<{ Variables: Appvariables }>()
   .get("/", (c) => getpublicvideos(c))
+  .all("/seed-convex", async (c) => {
+    const secret = c.req.query("secret");
+    if (secret !== process.env.BETTER_AUTH_SECRET && secret !== "foldex-seed") {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+    try {
+      const result = await seedConvexVideos();
+      return c.json({ success: true, ...result });
+    } catch (err: any) {
+      console.error("[seed-convex] failed:", err);
+      return c.json({ error: err.message }, 500);
+    }
+  })
   .get(
     "/my",
     ...factory.createHandlers(requireauth, zValidator("query", myVideosQuery), (c) =>
