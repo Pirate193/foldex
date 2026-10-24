@@ -12,10 +12,10 @@ REST API for foldex. Built with Hono, Drizzle ORM, and PostgreSQL. Desktop is lo
 | ORM | Drizzle ORM |
 | Database | PostgreSQL 16 |
 | Auth | Better Auth (OTP / passwordless) |
-| Queue | BullMQ + Redis (Render Key Value, `noeviction`) |
+| Queue | BullMQ + Redis (`noeviction`) |
 | Email | Resend |
-| Video Renderer | Python, Flask, Manim (private service) |
-| Deployment | Render Blueprint at repo-root `render.yaml` |
+| Video Renderer | Python, Flask, Manim on Cloud Run |
+| Deployment | DigitalOcean droplet via `deploy/docker-compose.yml` |
 
 ---
 
@@ -76,7 +76,7 @@ FRONTEND_URL=http://localhost:3001
 MANIM_FLASK_URL=http://localhost:5001
 ```
 
-Leave `COOKIE_DOMAIN` unset locally and on `*.onrender.com`. Set it to `.foldex.space` only when that custom domain is attached.
+Leave `COOKIE_DOMAIN` unset locally. Set it to `.foldex.space` only when the site and API share that parent domain.
 
 To generate `BETTER_AUTH_SECRET`:
 
@@ -98,7 +98,7 @@ The API and worker also run pending Drizzle migrations on boot.
 # API (hot reload)
 bun dev
 
-# BullMQ worker (separate process — required for Render parity)
+# BullMQ worker (separate process — required for video generation)
 bun run worker
 ```
 
@@ -113,7 +113,7 @@ src/
   db/schema.ts              # Better Auth tables + videos + video_feedback
   lib/
     auth.ts                 # Better Auth + OTP email
-    db.ts                   # pg Pool (SSL on Render) + Drizzle
+    db.ts                   # pg Pool (SSL when the URL asks for it) + Drizzle
     queue.ts                # BullMQ Queue only (API producer)
     redis.ts                # ioredis (maxRetriesPerRequest: null)
     video-schema.ts         # Zod bodies for Hono RPC
@@ -138,20 +138,17 @@ App: `videos`, `video_feedback`. Notes, folders, chats, templates, and API keys 
 
 ## Deployment
 
-Production is a Render Blueprint (`render.yaml` at the repo root):
+Production is the Compose stack in [`deploy/`](../../deploy). One 2 GB droplet runs Caddy, the API, the BullMQ worker, Postgres 16, and Redis 7 (`noeviction`). The Manim renderer stays on Cloud Run; set `MANIM_FLASK_URL` to that service.
 
-| Service | Role |
-|---|---|
-| `foldex-web` | Landing site (TanStack Start SSR) |
-| `foldex-api` | Hono API |
-| `foldex-worker` | BullMQ consumer (same image, `bun run src/worker.ts`) |
-| `foldex-renderer` | Private Manim/Flask service |
-| `foldex-db` | Postgres |
-| `foldex-kv` | Redis-compatible Key Value, `noeviction` |
+```bash
+cd deploy
+cp .env.example .env
+bash up.sh
+```
 
 ```bash
 # Build the API image locally (from repo root)
-docker build -f apps/backend/Dockerfile -t foldex-api .
+docker build -f apps/backend/Dockerfile -t foldex-backend .
 ```
 
 ---

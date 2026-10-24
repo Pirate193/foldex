@@ -29,5 +29,6 @@ EXPOSE 5001
 
 ENV PORT=5001
 
-# Render sets PORT; --timeout 0 lets long Manim jobs finish.
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 flask_api:app
+# Cloud Run sets PORT to 8080. --timeout 0 lets a long Manim job finish.
+# One thread so a container never starts two renders at once.
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 1 --timeout 0 flask_api:app
