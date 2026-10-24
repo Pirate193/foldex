@@ -4,7 +4,7 @@ import type { Update } from "@tauri-apps/plugin-updater";
 
 import { queryKeys } from "@/lib/query-keys";
 
-const RELEASES_API = "https://api.github.com/repos/kerry883/foldex/releases";
+const RELEASES_API = "https://api.github.com/repos/Pirate193/foldex/releases";
 
 export type UpdaterPhase =
   | "idle"
